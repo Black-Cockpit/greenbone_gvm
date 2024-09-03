@@ -1,0 +1,36 @@
+namespace: hasnimehdi91
+name: greenbone_gvm
+version: 1.0.0
+readme: README.md
+authors:
+- Hasni Mehdi <hasnimehdi@outlook.com>
+description: |
+  Ansible Collection for managing Greenbone Vulnerability Manager (GVM) resources through socket-based interactions.
+  This collection provides modules for automating the creation, management, and execution of security tasks, 
+  schedules, audits, and targets within GVM. Ideal for integrating Greenbone's powerful security scanning capabilities
+  into your Ansible workflows, enabling seamless security management and automation.
+license_file: 'LICENSE'
+tags:
+  - security
+  - vulnerability_management
+  - greenbone
+  - openvas
+  - gvm
+  - automation
+  - devops
+  - devsecops
+dependencies: {}
+repository: https://github.com/Black-Cockpit/greenbone_gvm
+documentation: https://github.com/Black-Cockpit/greenbone_gvm/blob/master/doc
+homepage: https://github.com/Black-Cockpit/greenbone_gvm
+issues: https://github.com/Black-Cockpit/greenbone_gvm/issues
+build_ignore:
+- "local_**.*"
+- "*.ini"
+- "*.kdbx"
+- "*.txt"
+- ".vscode"
+- "*.venv"
+- ".git*"
+- "*.cfg"
+
