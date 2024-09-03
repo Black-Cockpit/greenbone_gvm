@@ -22,7 +22,7 @@ PyNaCl==1.5.0
 python-gvm==24.8.0
 python-jose==3.3.0
 PyYAML==6.0.1
-requests==2.31.0
+requests==2.32.2
 requests-toolbelt==1.0.0
 resolvelib==0.8.1
 rsa==4.9
