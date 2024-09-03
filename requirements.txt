@@ -32,6 +32,6 @@ urllib3==2.0.4
 valid8==5.1.2
 validators==0.20.0
 xmltodict==0.13.0
-zipp==3.16.2
+zipp==3.19.1
 netaddr==0.8.0
 icalendar==5.0.7
