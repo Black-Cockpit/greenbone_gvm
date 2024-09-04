@@ -1,4 +1,4 @@
-# Copyright: (c) 2023, Hasni Mehdi <hasnimehdi@outlook.com>
+# Copyright: (c) 2024, Hasni Mehdi <hasnimehdi@outlook.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
 
@@ -25,7 +25,7 @@ DOCUMENTATION = r'''
 ---
 module: gvm_credentials
 
-short_description: gvm_credentials module
+short_description: Manage credentials in Greenbone Vulnerability Manager (GVM)
 
 version_added: "1.0.0"
 
@@ -134,9 +134,6 @@ options:
         type: str
         default: present
         choices: ["absent", "present"]
-author:
-    - Hasni Mehdi (@hasnimehdi91)
-    - hasnimehdi@outlook.com
 '''
 
 EXAMPLES = r'''
@@ -180,15 +177,14 @@ EXAMPLES = r'''
 
 RETURN = r'''
 # These are the attributes that can be returned by the module.
-credentials_id:
-    description: The ID of the credentials id (if applicable).
-    type: str
-    returned: success
-    sample: "e05c92a8-4e4c-445c-9c2e-19e03a8b3baf"
 changed:
     description: The state of the task.
     type: bool
     returned: always
+msg:
+    description: Error message if applicable.
+    type: str
+    returned: when_failed
 failed:
     description: Indicate if the task failed
     type: bool
@@ -215,7 +211,7 @@ def run_module():
         allow_insecure=dict(type='bool', required=False, default=True),
         certificate_base64=dict(type='str', required=False),
         key_phrase=dict(type='str', required=False),
-        private_key_base64=dict(type='str', required=False, no_log=True),
+        private_key_base64=dict(type='str', required=False),
         login=dict(type='str', required=False),
         password=dict(type='str', required=False, no_log=True),
         auth_algorithm=dict(type='str', required=False, choices=['MD5', 'SHA1']),
@@ -228,7 +224,7 @@ def run_module():
 
     # module result initialization
     result = dict(
-        changed=True,
+        changed=False,
         failed=False,
     )
 
@@ -269,7 +265,7 @@ def run_module():
                                        allow_insecure=gvm_module.params['allow_insecure'],
                                        certificate_base64=gvm_module.params['certificate_base64'],
                                        key_phrase=gvm_module.params['key_phrase'],
-                                       private_key_base64=gvm_module.params['private_key_base64'],
+                                       private_key_pem=gvm_module.params['private_key_base64'],
                                        login=gvm_module.params['login'],
                                        password=gvm_module.params['password'],
                                        auth_algorithm=gvm_module.params['auth_algorithm'],
@@ -286,7 +282,6 @@ def run_module():
             # Delete credentials
             execution_result = manager.delete_credentials([credentials])
             result['changed'] = execution_result.changed
-            gvm_module.warn(execution_result.warning_message)
     except ResourceInUseError as e:
         result['failed'] = True
         result['msg'] = str(e)

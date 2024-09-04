@@ -12,7 +12,7 @@ class ScheduleRecurrenceModel(object):
            frequency (str)           : Schedule frequency, supported value are HOURLY, DAILY, WEEKLY, MONTHLY and YEARLY
            interval (int)            : Schedule interval
            days_of_week (list[str])  : Days of week, supported values are 'We', 'Th', 'Fr','Sa', 'Su', 'Mo' and 'Tu'
-           days_of_month (list[int]) : List of IP addresses, networks or hostnames ro exclude from the scan
+           days_of_month (list[int]) : Day of the month between 1 and 31.
        """
 
     __slots__ = [

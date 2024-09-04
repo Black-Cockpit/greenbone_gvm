@@ -1,3 +1,8 @@
+ansible==8.7.0
+ansible-core==2.15.12
+pytz==2024.1
+python-dateutil==2.9.0.post0
+
 bcrypt==4.0.1
 certifi==2023.7.22
 cffi==1.15.1

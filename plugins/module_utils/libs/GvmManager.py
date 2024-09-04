@@ -14,6 +14,7 @@ from .TasksHandler import TasksHandler
 from ..models.CredentialsModel import CredentialsModel
 from ..models.ExecutionResult import ExecutionResult
 from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
+from ..models.ScheduleModel import ScheduleModel
 
 
 class GvmManager(object):
@@ -63,14 +64,14 @@ class GvmManager(object):
         handler = CredentialsHandler(credentials)
         return handler.delete_credentials(self.socket, self.admin_credentials)
 
-    def create_or_schedules(self, schedules_config_path: str):
+    def create_or_schedules(self, schedules: List[ScheduleModel] = None):
         """
         Create or update scan schedule
 
-        :param schedules_config_path: Scan schedule config path
+        :param schedules: List of schedules (List[ScheduleModel])
         :return:
         """
-        handler = SchedulesHandler.from_json(self._read_config_to_json(schedules_config_path))
+        handler = SchedulesHandler(schedules=schedules)
         handler.create_or_update_schedules(self.socket, self.admin_credentials)
 
     def create_or_update_tasks(self, tasks_config_path: str):

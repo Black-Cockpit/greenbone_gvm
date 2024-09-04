@@ -27,7 +27,7 @@ class SchedulesHandler(object):
         if schedules is None:
             schedules = []
         for schedule in schedules:
-            self.schedules.append(ScheduleModel.from_json(json.dumps(schedule)))
+            self.schedules.append(schedule)
 
     def create_or_update_schedules(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel):
         """

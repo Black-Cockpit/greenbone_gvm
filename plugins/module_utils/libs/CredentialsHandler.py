@@ -95,6 +95,8 @@ class CredentialsHandler(object):
                         raise AssertionError(f"Failed to update credentials {credentials.name}: \n {dic}")
 
                     if execution_result.changed is False:
+                        if credentials.is_in_use(existing_credentials):
+                            execution_result.warning_message = f"Credentials {credentials.name} is already in use, some of the property will be ignored and will not be updated."
                         execution_result.changed = True
             return execution_result
 
@@ -122,7 +124,7 @@ class CredentialsHandler(object):
 
             for credentials in self.credentials:
                 if credentials.is_in_use(existing_credentials):
-                    raise ResourceInUseError("Credentials is in use and not be deleted")
+                    raise ResourceInUseError(f"Credentials {credentials.name} is in use and not be deleted")
 
                 credentials_id = credentials.get_credentials_id(existing_credentials)
                 if credentials_id is not None:
@@ -133,7 +135,6 @@ class CredentialsHandler(object):
 
                     if execution_result.changed is False:
                         execution_result.changed = True
-                        execution_result.warning_message = credentials.get_private_key()
 
             return execution_result
 

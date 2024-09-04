@@ -78,7 +78,7 @@ class CredentialsModel(object):
             key_phrase (str)                            : Key passphrase for the private key.
                 Used for the username+ssh-key credential type.
 
-            private_key_base64 (str)                      : Private key to use for login. Required for usk credential
+            private_key_pem (str)                      : Private key to use for login. Required for usk credential
                 type. Also used for the cc credential type. The supported key types (dsa, rsa, ecdsa, ...) and
                 formats (PEM, PKC#12, OpenSSL, ...) depend on your installed GnuTLS version.
 
@@ -104,7 +104,7 @@ class CredentialsModel(object):
         "allow_insecure",
         'certificate_base64',
         'key_phrase',
-        'private_key_base64',
+        'private_key_pem',
         'login',
         'password',
         'auth_algorithm',
@@ -117,7 +117,7 @@ class CredentialsModel(object):
     def __init__(self, name: str = None, credential_type: Optional[str] = None,
                  comment: Optional[str] = None, allow_insecure: Optional[bool] = None,
                  certificate_base64: Optional[str] = None, key_phrase: Optional[str] = None,
-                 private_key_base64: Optional[str] = None, login: Optional[str] = None, password: Optional[str] = None,
+                 private_key_pem: Optional[str] = None, login: Optional[str] = None, password: Optional[str] = None,
                  auth_algorithm: Optional[str] = None, community: Optional[str] = None,
                  privacy_algorithm: str = None, privacy_password: Optional[str] = None,
                  public_key_base64: Optional[str] = None):
@@ -125,7 +125,7 @@ class CredentialsModel(object):
         self.allow_insecure = allow_insecure
         self.login = login
         self.password = password
-        self.private_key_base64 = private_key_base64
+        self.private_key_pem = private_key_pem
         self.comment = comment
         self.certificate_base64 = certificate_base64
         self.key_phrase = key_phrase
@@ -203,12 +203,12 @@ class CredentialsModel(object):
 
         :return:
         """
-        if self.private_key_base64 is not None and self.private_key_base64 != '' \
-                and self.private_key_base64.isspace() is False:
+        if self.private_key_pem is not None and self.private_key_pem != '' \
+                and self.private_key_pem.isspace() is False:
             try:
-                return b64decode(self.private_key_base64, validate=True).decode("utf-8")
+                return self.private_key_pem
             except Exception as e:
-                raise ValueError(f"Invalid private key base64 format, {e}")
+                raise ValueError(f"Invalid private key, {e}")
 
     def get_credentials_id(self, credentials_list: dict):
         """

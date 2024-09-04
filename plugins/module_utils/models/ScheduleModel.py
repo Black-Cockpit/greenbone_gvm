@@ -17,7 +17,7 @@ class ScheduleModel(object):
         comment (str)                               : Description of the schedule
         time_zone (str)                             : Valid time zone info, default is UTC
         first_run_at (str)                          : Start date time, any format is accepted
-        run_util (str)                              : End date time, any format is accepted
+        run_until (str)                              : End date time, any format is accepted
         recurrence (ScheduleRecurrenceModel | None) : Schedule recurrence
     """
 
@@ -27,12 +27,12 @@ class ScheduleModel(object):
         "_time_zone",
         '_first_run_at',
         '_port_range',
-        '_run_util',
+        '_run_until',
         '_recurrence'
     ]
 
     def __init__(self, name: str = None, comment: str = None, time_zone: str = "UTC", first_run_at: str = None,
-                 run_util: str = None, recurrence: ScheduleRecurrenceModel | None = None):
+                 run_until: str = None, recurrence: ScheduleRecurrenceModel | None = None):
         self.name = name
         self.comment = comment
         if time_zone is None or time_zone == '' or time_zone.isspace():
@@ -41,9 +41,9 @@ class ScheduleModel(object):
             self.time_zone = time_zone
 
         self.first_run_at = first_run_at
-        self.run_util = run_util
+        self.run_until = run_until
         if recurrence:
-            self.recurrence = ScheduleRecurrenceModel.from_json(json.dumps(recurrence))
+            self.recurrence = recurrence
         else:
             self.recurrence = None
 
@@ -90,16 +90,16 @@ class ScheduleModel(object):
         self._first_run_at = first_run_at
 
     @property
-    def run_util(self) -> str | None:
-        if self._run_util:
-            return self._run_util
+    def run_until(self) -> str | None:
+        if self._run_until:
+            return self._run_until
         return None
 
-    @run_util.setter
-    def run_util(self, run_util: str):
+    @run_until.setter
+    def run_until(self, run_util: str):
         if run_util and run_util.isspace() is False and is_parsable_to_date(run_util) is False:
             raise ValueError("Failed to parse run_util to datetime")
-        self._run_util = run_util
+        self._run_until = run_util
 
     @property
     def recurrence(self) -> ScheduleRecurrenceModel | None:
@@ -120,8 +120,8 @@ class ScheduleModel(object):
         event.add("dtstart", start_datetime)
         event.add('uid', f"{str(start_datetime.timestamp()).replace('.', '')}")
 
-        if self.run_util and self.run_util.isspace() is False:
-            event.add("dtend", parser.parse(self.run_util))
+        if self.run_until and self.run_until.isspace() is False:
+            event.add("dtend", parser.parse(self.run_until))
 
         if self.recurrence:
             event.add('rrule', self._recurrence.get_rrule())
