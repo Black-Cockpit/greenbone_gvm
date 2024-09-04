@@ -1458,10 +1458,13 @@ def run_module():
                                  run_until=gvm_module.params['run_until'], recurrence=recurrence)
 
         if gvm_module.params['state'] == 'present':
-            manager.create_or_schedules(schedules=[schedule])
-            result['changed'] = True
-        # else:
-
+            execution_result = manager.create_or_schedules(schedules=[schedule])
+            result['changed'] = execution_result.changed
+            if execution_result.warning_message is not None and execution_result.warning_message != '':
+                gvm_module.warn(execution_result.warning_message)
+        else:
+            execution_result = manager.delete_schedules(schedules=[schedule])
+            result['changed'] = execution_result.changed
     except ResourceInUseError as e:
         result['failed'] = True
         result['msg'] = str(e)

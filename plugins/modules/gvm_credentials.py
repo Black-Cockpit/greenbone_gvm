@@ -278,6 +278,8 @@ def run_module():
             # Create credentials
             execution_result = manager.create_or_update_credentials([credentials])
             result['changed'] = execution_result.changed
+            if execution_result.warning_message is not None and execution_result.warning_message != '':
+                gvm_module.warn(execution_result.warning_message)
         else:
             # Delete credentials
             execution_result = manager.delete_credentials([credentials])

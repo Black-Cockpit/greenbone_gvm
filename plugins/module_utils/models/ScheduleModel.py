@@ -151,6 +151,23 @@ class ScheduleModel(object):
                 if schedules.get("name") == self.name:
                     return schedules.get("@id")
 
+    def is_in_use(self, schedules: dict) -> bool:
+        """
+        Check if schedule is used by another resource
+        :param schedules: GVM schedules
+        :return:
+        """
+        if schedules is not None and len(schedules) > 0:
+            if type(schedules) is list:
+                for schedule in schedules:
+                    if schedule.get("name") == self.name:
+                        return schedule.get("in_use") is not None and schedule.get("in_use") != "" \
+                            and int(schedule.get("in_use")) >= 1
+            elif type(schedules) is dict:
+                if schedules.get("name") == self.name:
+                    return schedules.get("in_use") is not None and schedules.get("in_use") != "" \
+                        and int(schedules.get("in_use")) >= 1
+
     @classmethod
     def from_json(cls, json_string: str):
         if json_string is None or len(json_string) <= 0:

@@ -124,14 +124,16 @@ class CredentialsHandler(object):
 
             for credentials in self.credentials:
                 if credentials.is_in_use(existing_credentials):
-                    raise ResourceInUseError(f"Credentials {credentials.name} is in use and not be deleted")
+                    raise ResourceInUseError(f"Credentials {credentials.name} is in use and can not be deleted")
 
                 credentials_id = credentials.get_credentials_id(existing_credentials)
+
                 if credentials_id is not None:
                     delete_credential_response = gmp.delete_credential(credential_id=credentials_id, ultimate=True)
+
                     dic = xmltodict.parse(delete_credential_response)
                     if is_success_response(dic, "delete_credential_response") is False:
-                        raise AssertionError(f"Failed to update credentials {credentials.name}: \n {dic}")
+                        raise AssertionError(f"Failed to delete credentials {credentials.name}: \n {dic}")
 
                     if execution_result.changed is False:
                         execution_result.changed = True

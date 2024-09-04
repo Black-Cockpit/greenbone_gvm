@@ -64,7 +64,7 @@ class GvmManager(object):
         handler = CredentialsHandler(credentials)
         return handler.delete_credentials(self.socket, self.admin_credentials)
 
-    def create_or_schedules(self, schedules: List[ScheduleModel] = None):
+    def create_or_schedules(self, schedules: List[ScheduleModel] = None) -> ExecutionResult:
         """
         Create or update scan schedule
 
@@ -72,7 +72,17 @@ class GvmManager(object):
         :return:
         """
         handler = SchedulesHandler(schedules=schedules)
-        handler.create_or_update_schedules(self.socket, self.admin_credentials)
+        return handler.create_or_update_schedules(self.socket, self.admin_credentials)
+
+    def delete_schedules(self, schedules: List[ScheduleModel] = None) -> ExecutionResult:
+        """
+        Delete scan schedule
+
+        :param schedules: List of schedules (List[ScheduleModel])
+        :return:
+        """
+        handler = SchedulesHandler(schedules=schedules)
+        return handler.delete_schedules(self.socket, self.admin_credentials)
 
     def create_or_update_tasks(self, tasks_config_path: str):
         """
