@@ -113,6 +113,7 @@ class SchedulesHandler(object):
                 schedule_id = schedule.get_schedule_id(existing_schedules)
 
                 if schedule_id is not None:
+                    gmp.empty_trashcan()
                     delete_schedule_response = gmp.delete_schedule(schedule_id=schedule_id, ultimate=True)
 
                     dic = xmltodict.parse(delete_schedule_response)

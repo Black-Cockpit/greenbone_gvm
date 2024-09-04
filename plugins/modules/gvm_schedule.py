@@ -729,6 +729,9 @@ EXAMPLES = r'''
 ---
 - name: Create a weekly Saturday schedule
   gvm_schedule:
+    socket_path: "/run/gvmd/gvmd.sock"
+    gvm_username: "admin"
+    gvm_password: "admin"
     name: "weekly_saturday_schedule"
     comment: "Weekly Saturday schedule"
     time_zone: "UTC"
@@ -742,6 +745,9 @@ EXAMPLES = r'''
 
 - name: Update an existing schedule
   gvm_schedule:
+    socket_path: "/run/gvmd/gvmd.sock"
+    gvm_username: "admin"
+    gvm_password: "admin"
     name: "weekly_saturday_schedule"
     comment: "Updated weekly Saturday schedule"
     time_zone: "UTC"
@@ -755,6 +761,9 @@ EXAMPLES = r'''
 
 - name: Delete a schedule
   gvm_schedule:
+    socket_path: "/run/gvmd/gvmd.sock"
+    gvm_username: "admin"
+    gvm_password: "admin"
     name: "weekly_saturday_schedule"
     state: absent
 '''

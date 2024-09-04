@@ -129,6 +129,7 @@ class CredentialsHandler(object):
                 credentials_id = credentials.get_credentials_id(existing_credentials)
 
                 if credentials_id is not None:
+                    gmp.empty_trashcan()
                     delete_credential_response = gmp.delete_credential(credential_id=credentials_id, ultimate=True)
 
                     dic = xmltodict.parse(delete_credential_response)

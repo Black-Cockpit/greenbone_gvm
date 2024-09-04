@@ -6,6 +6,8 @@ from gvm.connections import UnixSocketConnection
 from gvm.protocols.gmp import Gmp
 from gvm.protocols.gmp.requests.v225 import CredentialType
 
+from ..exceptions.ResourceInUseError import ResourceInUseError
+from ..models.ExecutionResult import ExecutionResult
 from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
 from ..models.TargetModel import TargetModel
 from ..utils.GvmUtils import is_success_response
@@ -26,9 +28,10 @@ class TargetsHandler(object):
         if targets is None:
             targets = []
         for target in targets:
-            self.targets.append(TargetModel.from_json(json.dumps(target)))
+            self.targets.append(target)
 
-    def create_or_update_targets(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel):
+    def create_or_update_targets(self, socket: UnixSocketConnection,
+                                 admin_credentials: GvmAdminCredentialsModel) -> ExecutionResult:
         """
         Create or update targets
         :param admin_credentials: GVM admin credentials
@@ -42,6 +45,8 @@ class TargetsHandler(object):
             get_credentials_response = gmp.get_credentials()
             if is_success_response(xmltodict.parse(get_credentials_response), "get_credentials_response") is False:
                 raise AssertionError(f"Failed to to get gvm credentials list")
+
+            execution_result = ExecutionResult()
 
             existing_credentials = xmltodict.parse(get_credentials_response).get("get_credentials_response", {}).get(
                 "credential")
@@ -67,13 +72,13 @@ class TargetsHandler(object):
             for target in self.targets:
                 target_ports_list_id = target.get_ports_list_id(ports_list)
                 target_id = target.get_target_id(existing_targets)
-                
+
                 credentials_id = None
                 credentials_type = None
-                
+
                 if target.credentials_name and target.credentials_name != '':
                     credentials_id, credentials_type = target.get_credentials_id(existing_credentials,
-                                                                             target.credentials_name)
+                                                                                 target.credentials_name)
 
                 ssh_credential_id = None
                 esxi_credential_id = None
@@ -113,6 +118,9 @@ class TargetsHandler(object):
                     dic = xmltodict.parse(create_target_response)
                     if is_success_response(dic, "create_target_response") is False:
                         raise AssertionError(f"Failed to create target {target.name}: \n {dic}")
+
+                    if execution_result.changed is False:
+                        execution_result.changed = True
                 else:
                     if target.is_in_use(existing_targets):
                         modify_target_response = gmp.modify_target(target_id=target_id,
@@ -138,6 +146,52 @@ class TargetsHandler(object):
                     dic = xmltodict.parse(modify_target_response)
                     if is_success_response(dic, "modify_target_response") is False:
                         raise AssertionError(f"Failed to modify target {target.name}: \n {dic}")
+
+                    if execution_result.changed is False:
+                        if target.is_in_use(existing_credentials):
+                            execution_result.warning_message = f"Target {target.name} is already in use, some of the property will be ignored and will not be updated."
+                        execution_result.changed = True
+            return execution_result
+
+
+    def delete_targets(self, socket: UnixSocketConnection,
+                                 admin_credentials: GvmAdminCredentialsModel) -> ExecutionResult:
+        """
+        Delete targets
+        :param admin_credentials: GVM admin credentials
+        :param socket: GVM Unix domain socket
+        :return:
+        """
+        with Gmp(connection=socket) as gmp:
+            gmp.authenticate(admin_credentials.username, admin_credentials.password)
+
+            execution_result = ExecutionResult(changed=False)
+
+            # List targets
+            target_list_response = gmp.get_targets(filter_string="first=0 rows=100")
+            if is_success_response(xmltodict.parse(target_list_response), "get_targets_response") is False:
+                return execution_result
+
+            existing_targets = xmltodict.parse(target_list_response).get("get_targets_response", {}).get("target", {})
+
+            # Delete targets
+            for target in self.targets:
+                if target.is_in_use(existing_targets):
+                    raise ResourceInUseError(f"Target {target.name} is in use and can not be deleted")
+
+                target_id = target.get_target_id(existing_targets)
+
+                if target_id is not None:
+                    gmp.empty_trashcan()
+                    delete_target_response = gmp.delete_target(target_id=target_id,ultimate=True)
+
+                    dic = xmltodict.parse(delete_target_response)
+                    if is_success_response(dic, "delete_target_response") is False:
+                        raise AssertionError(f"Failed to delete target {target.name}: \n {dic}")
+
+                    if execution_result.changed is False:
+                        execution_result.changed = True
+            return execution_result
 
     @classmethod
     def from_json(cls, json_string: str):

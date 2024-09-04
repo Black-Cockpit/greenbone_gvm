@@ -15,6 +15,7 @@ from ..models.CredentialsModel import CredentialsModel
 from ..models.ExecutionResult import ExecutionResult
 from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
 from ..models.ScheduleModel import ScheduleModel
+from ..models.TargetModel import TargetModel
 
 
 class GvmManager(object):
@@ -34,15 +35,25 @@ class GvmManager(object):
         self.socket = socket
         self.admin_credentials = admin_credentials
 
-    def create_or_update_targets(self, targets_config_path: str):
+    def create_or_update_targets(self, targets: List[TargetModel] = None) -> ExecutionResult:
         """
         Create or update targets
 
-        :param targets_config_path: Targets config path
+        :param targets: List of targets (List[TargetModel])
         :return:
         """
-        handler = TargetsHandler.from_json(self._read_config_to_json(targets_config_path))
-        handler.create_or_update_targets(self.socket, self.admin_credentials)
+        handler = TargetsHandler(targets)
+        return handler.create_or_update_targets(self.socket, self.admin_credentials)
+
+    def delete_targets(self, targets: List[TargetModel] = None) -> ExecutionResult:
+        """
+        Delete targets
+
+        :param targets: List of targets (List[TargetModel])
+        :return:
+        """
+        handler = TargetsHandler(targets)
+        return handler.delete_targets(self.socket, self.admin_credentials)
 
     def create_or_update_credentials(self, credentials: List[CredentialsModel]) -> ExecutionResult:
         """

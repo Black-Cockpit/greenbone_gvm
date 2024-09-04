@@ -31,6 +31,10 @@ version_added: "1.0.0"
 
 description: 
     This module manages the credentials list on GVM.
+    
+author:
+    - Hasni Mehdi (@hasnimehdi91)
+    - hasnimehdi@outlook.com
 
 options:
     socket_path:
@@ -83,7 +87,7 @@ options:
             - Password used for the username+ssh-key credentials type (If applicable).
         required: false
         type: str
-    private_key_base64:
+    private_key_pem:
         description:
             - Private key to use for login. Required for usk credentials type. Also used for the cc credentials type. 
             The supported key types (dsa, rsa, ecdsa, ...) and formats (PEM, PKC#12, OpenSSL, ...) depend on your installed GnuTLS version.
@@ -140,6 +144,9 @@ EXAMPLES = r'''
 # Create a new credential of type USERNAME_PASSWORD
 - name: Create USERNAME_PASSWORD credential
   gvm_credentials:
+    socket_path: "/run/gvmd/gvmd.sock"
+    gvm_username: "admin"
+    gvm_password: "admin"
     name: "My Credential"
     credential_type: "USERNAME_PASSWORD"
     login: "user123"
@@ -150,6 +157,9 @@ EXAMPLES = r'''
 # Create a new SNMP credential
 - name: Create SNMP credential
   gvm_credentials:
+    socket_path: "/run/gvmd/gvmd.sock"
+    gvm_username: "admin"
+    gvm_password: "admin"
     name: "SNMP Credential"
     credential_type: "SNMP"
     login: "snmpuser"
@@ -162,6 +172,9 @@ EXAMPLES = r'''
 # Create a new PGP encryption key credential
 - name: Create PGP encryption key credential
   gvm_credentials:
+    socket_path: "/run/gvmd/gvmd.sock"
+    gvm_username: "admin"
+    gvm_password: "admin"
     name: "PGP Credential"
     credential_type: "PGP_ENCRYPTION_KEY"
     public_key_base64: "{{ lookup('file', '/path/to/public/key.asc') }}"
@@ -171,6 +184,9 @@ EXAMPLES = r'''
 # Delete a credential
 - name: Delete credential
   gvm_credentials:
+    socket_path: "/run/gvmd/gvmd.sock"
+    gvm_username: "admin"
+    gvm_password: "admin"
     name: "Old Credential"
     state: absent
 '''
@@ -211,7 +227,7 @@ def run_module():
         allow_insecure=dict(type='bool', required=False, default=True),
         certificate_base64=dict(type='str', required=False),
         key_phrase=dict(type='str', required=False),
-        private_key_base64=dict(type='str', required=False),
+        private_key_pem=dict(type='str', required=False),
         login=dict(type='str', required=False),
         password=dict(type='str', required=False, no_log=True),
         auth_algorithm=dict(type='str', required=False, choices=['MD5', 'SHA1']),
@@ -265,7 +281,7 @@ def run_module():
                                        allow_insecure=gvm_module.params['allow_insecure'],
                                        certificate_base64=gvm_module.params['certificate_base64'],
                                        key_phrase=gvm_module.params['key_phrase'],
-                                       private_key_pem=gvm_module.params['private_key_base64'],
+                                       private_key_pem=gvm_module.params['private_key_pem'],
                                        login=gvm_module.params['login'],
                                        password=gvm_module.params['password'],
                                        auth_algorithm=gvm_module.params['auth_algorithm'],
