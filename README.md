@@ -13,13 +13,14 @@ This Ansible collection provides modules for managing Greenbone Vulnerability Ma
 - GVM (Greenbone Vulnerability Manager) installed and accessible
 - Proper permissions for managing GVM through the API
 - The python libraries below should be installed on the target machine (The machine where Greenbone GVM is installed)
+
 ```bash
 pip install python-gvm==24.8.0 --user
 pip install xmltodict==0.13.0 --user
 pip install netaddr==0.8.0 --user
 pip install icalendar==5.0.7 --user
 pip install validators==0.20.0 --user
-- ```
+```
 
 ## Installation
 
