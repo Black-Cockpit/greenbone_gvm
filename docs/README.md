@@ -393,5 +393,3 @@ This collection is licensed under the [MIT License](LICENSE).
 This collection was created in 2024 by [Black-Cockpit](https://github.com/Black-Cockpit).
 
 For more information, visit the [Ansible Galaxy page](https://galaxy.ansible.com/hasnimehdi91/greenbone_gvm).
-
-```
