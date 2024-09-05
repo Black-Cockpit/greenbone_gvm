@@ -117,15 +117,27 @@ class GvmManager(object):
         handler = TasksHandler(tasks)
         return handler.delete_tasks(self.socket, self.admin_credentials)
 
-    def create_or_update_audits(self, tasks_config_path: str):
+    def create_or_update_audits(self, audits: List[AuditModel] = None) -> ExecutionResult:
         """
         Create or update audit tasks
 
-        :param tasks_config_path: Audit tasks config path
+        :param audits: List of audits (List[AuditModel])
+        :return:
         :return:
         """
-        handler = AuditsHandler.from_json(self._read_config_to_json(tasks_config_path))
-        handler.create_or_update_audit_tasks(self.socket, self.admin_credentials)
+        handler = AuditsHandler(audits=audits)
+        return handler.create_or_update_audit_tasks(self.socket, self.admin_credentials)
+
+    def delete_audits(self, audits: List[AuditModel] = None) -> ExecutionResult:
+        """
+        Delete audit tasks
+
+        :param audits: List of audits (List[AuditModel])
+        :return:
+        :return:
+        """
+        handler = AuditsHandler(audits=audits)
+        return handler.delete_audit_tasks(self.socket, self.admin_credentials)
 
     def execute_task_command(self, tasks: List[TaskModel] = None, audits: List[AuditModel] = None,
                              task_type: str = "scan", command: bool = False) -> ExecutionResult:

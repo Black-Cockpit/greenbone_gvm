@@ -7,7 +7,7 @@ import traceback
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from gvm.connections import UnixSocketConnection
 
-from ..module_utils.models.TaskModel import TaskModel
+from ..module_utils.models.AuditModel import AuditModel
 from ..module_utils.exceptions.ResourceInUseError import ResourceInUseError
 from ..module_utils.models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
 from ..module_utils.libs.GvmManager import GvmManager
@@ -24,68 +24,64 @@ except ModuleNotFoundError or NameError:
 
 DOCUMENTATION = r'''
 ---
-module: gvm_task
+module: gvm_audit
 
-short_description: Manage Greenbone Vulnerability Manager (GVM) tasks
+short_description: Manage Greenbone Vulnerability Manager (GVM) audits
 
 version_added: "1.0.0"
 
 description:
-  - This module allows for the management of tasks in Greenbone Vulnerability Manager (GVM). 
-    It provides functionalities to create, update, and manage vulnerability scan tasks.
+    - This module manages audits in Greenbone Vulnerability Manager (GVM). It allows you to create, update, or delete audits, and configure various audit parameters.
 
 author:
     - Hasni Mehdi (@hasnimehdi91)
     - hasnimehdi@outlook.com
-
+    
 options:
     socket_path:
-        description: 
-            - GVM socket path, default: /run/gvmd/gvmd.sock
-        required: false
+        description:
+            - Path to the GVM socket file.
+        required: true
         type: str
-        default: /run/gvmd/gvmd.sock
     gvm_username:
-        description: 
-            - GVM admin username: default: admin.
-        required: false
+        description:
+            - Username for GVM authentication.
+        required: true
         type: str
-        default: admin
     gvm_password:
-        description: 
-            - GVM admin password: default: admin.
-        required: false
+        description:
+            - Password for GVM authentication.
+        required: true
         type: str
-        default: admin
     name:
         description:
-            - The name of the task.
+            - Name of the audit.
         required: true
         type: str
     comment:
         description:
-            - A comment or description for the task.
+            - Comment or description for the audit.
         required: false
         type: str
     target_name:
         description:
-            - The name of the target for the scan.
+            - Name of the target for the audit.
         required: true
         type: str
     schedule_name:
         description:
-            - The name of the schedule to use for the scan.
+            - Name of the schedule to associate with the audit.
         required: false
         type: str
     scan_once:
         description:
-            - Whether to run the scan only once.
+            - Whether to execute the scan only once.
         required: false
         type: bool
-        default: true
+        default: false
     add_result_in_assets:
         description:
-            - Whether to add results to assets.
+            - Whether to add results in assets.
         required: false
         type: bool
         default: true
@@ -97,42 +93,42 @@ options:
         default: true
     min_quality_of_detection:
         description:
-            - Minimum quality of detection for the scan.
+            - Minimum quality of detection for the audit.
         required: false
         type: int
         default: 70
     alterable:
         description:
-            - Whether the task can be altered.
+            - Whether the audit is alterable.
         required: false
         type: bool
-        default: true
+        default: false
     auto_delete:
         description:
-            - Whether to auto-delete the task.
+            - Whether to automatically delete the audit.
         required: false
         type: bool
         default: false
     auto_delete_data:
         description:
-            - Number of days after which data should be auto-deleted.
+            - Number of days after which the audit data will be automatically deleted.
         required: false
         type: int
+        default: 5
     scanner_name:
         description:
-            - The name of the scanner to use.
+            - Name of the scanner to use.
         required: false
         type: str
         default: "OpenVAS Default"
-    config_name:
+    policy_config_name:
         description:
-            - The name of the configuration to use.
-        required: false
+            - Name of the policy configuration to use.
+        required: true
         type: str
-        default: "Full and fast"
     hosts_ordering:
         description:
-            - Ordering of hosts in the scan.
+            - Ordering of hosts to scan.
         required: false
         type: str
         choices: ['sequential', 'random', 'reverse']
@@ -148,26 +144,25 @@ options:
             - Maximum concurrency of scanned hosts.
         required: false
         type: int
-        default: 20
+        default: 4
     state:
         description:
-            - State of the scan task, possible values are present, absent, started or stopped. The default is present.
-        required: false
+            - State of the audit.
+        required: true
         type: str
-        default: present
         choices: ["absent", "present","started", "stopped"]
 '''
 
 EXAMPLES = r'''
-- name: Create a new database server scan task
-  gvm_task:
+- name: Create or update an audit
+  gvm_audit:
     socket_path: "/run/gvmd/gvmd.sock"
     gvm_username: "admin"
     gvm_password: "admin"
-    name: "database_server_scan"
-    comment: "Database server vulnerability scan"
+    name: "database_server_audit"
+    comment: "Database server audit"
     target_name: "database_server"
-    schedule_name: "weekly_saturday_schedule"
+    schedule_name: "monthly_schedule"
     scan_once: false
     add_result_in_assets: true
     apply_overrides: true
@@ -176,34 +171,34 @@ EXAMPLES = r'''
     auto_delete: true
     auto_delete_data: 5
     scanner_name: "OpenVAS Default"
-    config_name: "Full and fast"
+    policy_config_name: "EulerOS Linux Security Configuration"
     hosts_ordering: "sequential"
     max_concurrency_executed_nvt_per_host: 4
-    max_concurrency_scanned_host: 20
-    status: present
-    
-- name: Delete a task
-  gvm_task:
+    max_concurrency_scanned_host: 4
+    state: started
+
+- name: Delete an audit
+  gvm_audit:
     socket_path: "/run/gvmd/gvmd.sock"
     gvm_username: "admin"
     gvm_password: "admin"
-    name: "database_server_scan"
+    name: "database_server_audit"
     target_name: "database_server"
-    status: absent
+    state: stopped
 '''
 
 
 def run_module():
     """
-    gvm_task module
+    gvm_audit module
     Returns:
     """
 
-    # gvm_task module arguments
+    # gvm_audit module arguments
     module_args = dict(
-        socket_path=dict(type='str', required=False, default='/run/gvmd/gvmd.sock'),
-        gvm_username=dict(type='str', required=False, default='admin'),
-        gvm_password=dict(type='str', required=False, default='admin', no_log=True),
+        socket_path=dict(type='str', required=True),
+        gvm_username=dict(type='str', required=True),
+        gvm_password=dict(type='str', required=True, no_log=True),
         name=dict(type='str', required=True),
         comment=dict(type='str', required=False, default=''),
         target_name=dict(type='str', required=True),
@@ -216,12 +211,13 @@ def run_module():
         auto_delete=dict(type='bool', required=False, default=True),
         auto_delete_data=dict(type='int', required=False, default=5),
         scanner_name=dict(type='str', required=False, default='OpenVAS Default'),
-        config_name=dict(type='str', required=False, default='Full and fast'),
+        policy_config_name=dict(type='str', required=False, default='EulerOS Linux Security Configuration'),
         hosts_ordering=dict(type='str', required=False, choices=['sequential', 'random', 'reverse'],
                             default='sequential'),
         max_concurrency_executed_nvt_per_host=dict(type='int', required=False, default=4),
-        max_concurrency_scanned_host=dict(type='int', required=False, default=20),
-        state=dict(type='str', required=False, default='present', choices=["absent", "present", "started", "stopped"])
+        max_concurrency_scanned_host=dict(type='int', required=False, default=4),
+        state=dict(type='str', required=True, choices=["absent", "present", "started", "stopped"]),
+        validate_certs=dict(type='bool', required=False, default=True)
     )
 
     # module result initialization
@@ -260,43 +256,45 @@ def run_module():
                              GvmAdminCredentialsModel(gvm_module.params['gvm_username'],
                                                       gvm_module.params['gvm_password']))
 
-        # Initialize task
-        task = TaskModel(name=gvm_module.params['name'],
-                         comment=gvm_module.params['comment'],
-                         target_name=gvm_module.params['target_name'],
-                         schedule_name=gvm_module.params['schedule_name'],
-                         scan_once=gvm_module.params['scan_once'],
-                         add_result_in_assets=gvm_module.params['add_result_in_assets'],
-                         apply_overrides=gvm_module.params['apply_overrides'],
-                         min_quality_of_detection=gvm_module.params['min_quality_of_detection'],
-                         alterable=gvm_module.params['alterable'],
-                         auto_delete=gvm_module.params['auto_delete'],
-                         auto_delete_data=gvm_module.params['auto_delete_data'],
-                         scanner_name=gvm_module.params['scanner_name'],
-                         config_name=gvm_module.params['config_name'],
-                         hosts_ordering=gvm_module.params['hosts_ordering'],
-                         max_concurrency_scanned_host=gvm_module.params['max_concurrency_scanned_host'],
-                         start=False)
+        # Initialize audit
+        task = AuditModel(name=gvm_module.params['name'],
+                          comment=gvm_module.params['comment'],
+                          target_name=gvm_module.params['target_name'],
+                          schedule_name=gvm_module.params['schedule_name'],
+                          scan_once=gvm_module.params['scan_once'],
+                          add_result_in_assets=gvm_module.params['add_result_in_assets'],
+                          apply_overrides=gvm_module.params['apply_overrides'],
+                          min_quality_of_detection=gvm_module.params['min_quality_of_detection'],
+                          alterable=gvm_module.params['alterable'],
+                          auto_delete=gvm_module.params['auto_delete'],
+                          auto_delete_data=gvm_module.params['auto_delete_data'],
+                          scanner_name=gvm_module.params['scanner_name'],
+                          policy_config_name=gvm_module.params['policy_config_name'],
+                          hosts_ordering=gvm_module.params['hosts_ordering'],
+                          max_concurrency_scanned_host=gvm_module.params['max_concurrency_scanned_host'],
+                          max_concurrency_executed_nvt_per_host=gvm_module.params[
+                              'max_concurrency_executed_nvt_per_host'],
+                          start=False)
 
         if gvm_module.params['state'] == 'present':
-            # Create scan task
-            execution_result = manager.create_or_update_tasks([task])
+            # Create audit task
+            execution_result = manager.create_or_update_audits([task])
             result['changed'] = execution_result.changed
             if execution_result.warning_message is not None and execution_result.warning_message != '':
                 gvm_module.warn(execution_result.warning_message)
         elif gvm_module.params['state'] == 'absent':
-            # Delete scan task
-            execution_result = manager.delete_tasks([task])
+            # Delete audit task
+            execution_result = manager.delete_audits([task])
             result['changed'] = execution_result.changed
         elif gvm_module.params['state'] == 'started':
-            # Start scan task
+            # Start audit task
             task.start = True
-            execution_result = manager.execute_task_command(tasks=[task], task_type="scan", command=task.start)
+            execution_result = manager.execute_task_command(audits=[task], task_type="audit", command=task.start)
             result['changed'] = execution_result.changed
         else:
-            # Stop scan task
+            # Stop task
             task.start = False
-            execution_result = manager.execute_task_command(tasks=[task], task_type="scan", command=task.start)
+            execution_result = manager.execute_task_command(audits=[task], task_type="audit", command=task.start)
             result['changed'] = execution_result.changed
     except ResourceInUseError as e:
         result['failed'] = True
@@ -304,7 +302,7 @@ def run_module():
         gvm_module.fail_json(**result)
     except Exception as e:
         result['failed'] = True
-        result['msg'] = str(f'Failed to manage GVM scan task {str(e)}')
+        result['msg'] = str(f'Failed to manage GVM audit task {str(e)}')
         gvm_module.fail_json(**result)
 
     # Exit with result
@@ -313,7 +311,7 @@ def run_module():
 
 def main():
     """
-    Execute gvm_task module
+    Execute gvm_audit module
     Returns:
 
     """

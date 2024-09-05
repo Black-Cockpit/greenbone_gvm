@@ -33,4 +33,5 @@ build_ignore:
 - "*.venv"
 - ".git*"
 - "*.cfg"
+- "*.sh"
 

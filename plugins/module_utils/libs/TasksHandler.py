@@ -185,9 +185,11 @@ class TasksHandler(object):
                                              ).get("get_tasks_response", {}).get("task", {})
             for task in self.tasks:
                 task_id = task.get_task_id(existing_tasks, task.name)
+
                 if task.start and task_id is not None:
                     start_task_response = gmp.start_task(task_id)
                     dic = xmltodict.parse(start_task_response)
+
                     if is_success_response(dic, "start_task_response") is False:
                         raise AssertionError(f"Failed to start task {task.name}: \n {dic}")
 

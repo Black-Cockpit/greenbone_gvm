@@ -306,7 +306,8 @@ class AuditModel(object):
             elif type(targets) is dict:
                 if targets.get("name") == self.name:
                     return targets.get("schedule") is not None and type(targets.get("schedule")) is dict \
-                        and targets.get("in_use").get("name") is not None and targets.get("in_use").get("name") != ""
+                        and targets.get("schedule").get("name") is not None and targets.get("schedule").get(
+                            "name") != ""
 
     @classmethod
     def from_json(cls, json_string: str):

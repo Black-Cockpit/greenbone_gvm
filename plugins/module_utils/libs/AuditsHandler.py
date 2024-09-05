@@ -6,6 +6,7 @@ from gvm.connections import UnixSocketConnection
 from gvm.protocols.gmp import Gmp
 
 from ..models.AuditModel import AuditModel
+from ..models.ExecutionResult import ExecutionResult
 from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
 from ..utils.GvmUtils import is_success_response
 
@@ -27,7 +28,8 @@ class AuditsHandler(object):
         for audit in audits:
             self.audits.append(audit)
 
-    def create_or_update_audit_tasks(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel):
+    def create_or_update_audit_tasks(self, socket: UnixSocketConnection,
+                                     admin_credentials: GvmAdminCredentialsModel) -> ExecutionResult:
         """
         Create or update audit tasks
         :param admin_credentials: GVM admin credentials
@@ -41,6 +43,8 @@ class AuditsHandler(object):
             get_schedules_response = gmp.get_schedules()
             if is_success_response(xmltodict.parse(get_schedules_response), "get_schedules_response") is False:
                 raise AssertionError(f"Failed to to get gvm schedules list")
+
+            execution_result = ExecutionResult()
 
             existing_schedules = xmltodict.parse(get_schedules_response).get("get_schedules_response", {}).get(
                 "schedule")
@@ -101,6 +105,9 @@ class AuditsHandler(object):
                     dic = xmltodict.parse(create_task_response)
                     if is_success_response(dic, "create_task_response") is False:
                         raise AssertionError(f"Failed to create audit task {audit.name}: \n {dic}")
+
+                    if execution_result.changed is False:
+                        execution_result.changed = True
                 else:
                     modify_task_response = gmp.modify_audit(audit_id=audit_id,
                                                             preferences=audit.build_preferences(scanner_type),
@@ -117,7 +124,49 @@ class AuditsHandler(object):
                     if is_success_response(dic, "modify_task_response") is False:
                         raise AssertionError(f"Failed to update audit task {audit.name}: \n {dic}")
 
-    def start(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel):
+                    if execution_result.changed is False:
+                        execution_result.changed = True
+
+            return execution_result
+
+    def delete_audit_tasks(self, socket: UnixSocketConnection,
+                           admin_credentials: GvmAdminCredentialsModel) -> ExecutionResult:
+        """
+        Delete audit tasks
+        :param admin_credentials: GVM admin credentials
+        :param socket: GVM Unix domain socket
+        :return:
+        """
+        with Gmp(connection=socket) as gmp:
+            gmp.authenticate(admin_credentials.username, admin_credentials.password)
+
+            execution_result = ExecutionResult()
+
+            # List audit tasks
+            get_tasks_response = gmp.get_audits(filter_string="first=0 rows=100")
+            if is_success_response(xmltodict.parse(get_tasks_response), "get_tasks_response") is False:
+                return execution_result
+
+            existing_tasks = xmltodict.parse(get_tasks_response
+                                             ).get("get_tasks_response", {}).get("task", {})
+
+            for audit in self.audits:
+                audit_id = audit.get_audit_id(existing_tasks, audit.name)
+
+                if audit_id is not None:
+                    gmp.empty_trashcan()
+                    delete_task_response = gmp.delete_task(task_id=audit_id, ultimate=True)
+
+                    dic = xmltodict.parse(delete_task_response)
+                    if is_success_response(dic, "delete_task_response") is False:
+                        raise AssertionError(f"Failed to delete audit task {audit.name}: \n {dic}")
+
+                    if execution_result.changed is False:
+                        execution_result.changed = True
+
+            return execution_result
+
+    def start(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel) -> ExecutionResult:
         """
         Start audit tasks
         :param admin_credentials: GVM admin credentials
@@ -127,20 +176,28 @@ class AuditsHandler(object):
         with Gmp(connection=socket) as gmp:
             gmp.authenticate(admin_credentials.username, admin_credentials.password)
 
+            execution_result = ExecutionResult()
+
             # List tasks
             get_tasks_response = gmp.get_audits(filter_string="first=0 rows=100")
             if is_success_response(xmltodict.parse(get_tasks_response), "get_tasks_response") is False:
                 raise AssertionError(f"Failed to to get gvm tasks list")
 
-            existing_tasks = xmltodict.parse(get_tasks_response
-                                             ).get("get_tasks_response", {}).get("task", {})
+            existing_tasks = xmltodict.parse(get_tasks_response).get("get_tasks_response", {}).get("task", {})
+
             for audit in self.audits:
                 audit_id = audit.get_audit_id(existing_tasks, audit.name)
+
                 if audit.start and audit_id is not None and audit.is_scheduled(existing_tasks) is False:
                     start_task_response = gmp.start_audit(audit_id)
+
                     dic = xmltodict.parse(start_task_response)
                     if is_success_response(dic, "start_task_response") is False:
                         raise AssertionError(f"Failed to start audit task {audit.name}: \n {dic}")
+
+                    if execution_result.changed is False and audit.is_scheduled(existing_tasks) is False:
+                        execution_result.changed = True
+            return execution_result
 
     def stop(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel):
         """
@@ -157,15 +214,21 @@ class AuditsHandler(object):
             if is_success_response(xmltodict.parse(get_tasks_response), "get_tasks_response") is False:
                 raise AssertionError(f"Failed to to get gvm audit tasks list")
 
-            existing_tasks = xmltodict.parse(get_tasks_response
-                                             ).get("get_tasks_response", {}).get("task")
+            execution_result = ExecutionResult()
+
+            existing_tasks = xmltodict.parse(get_tasks_response).get("get_tasks_response", {}).get("task")
+
             for audit in self.audits:
                 audit_id = audit.get_audit_id(existing_tasks, audit.name)
+
                 if audit.start is False and audit_id is not None:
                     try:
                         gmp.stop_audit(audit_id)
+                        if execution_result.changed is False:
+                            execution_result.changed = True
                     except Exception as e:
                         print(f"Failed to stop audit task {audit.name}, {e}")
+            return execution_result
 
     @classmethod
     def from_json(cls, json_string: str):
