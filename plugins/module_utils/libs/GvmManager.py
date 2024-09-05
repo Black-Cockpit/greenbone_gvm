@@ -1,3 +1,6 @@
+# Copyright: (c) 2024, Black-Cockpit <hasnimehdi@outlook.com>
+# MIT License (see LICENSE or https://opensource.org/licenses/MIT)
+
 from typing import List
 
 import yaml

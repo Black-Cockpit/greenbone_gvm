@@ -1,5 +1,5 @@
-# Copyright: (c) 2024, Hasni Mehdi <hasnimehdi@outlook.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright: (c) 2024, Black-Cockpit <hasnimehdi@outlook.com>
+# MIT License (see LICENSE or https://opensource.org/licenses/MIT)
 from __future__ import (absolute_import, division, print_function)
 
 import traceback

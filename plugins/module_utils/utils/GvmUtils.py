@@ -1,3 +1,6 @@
+# Copyright: (c) 2024, Black-Cockpit <hasnimehdi@outlook.com>
+# MIT License (see LICENSE or https://opensource.org/licenses/MIT)
+
 def is_success_response(gvm_response: dict, key: str) -> bool:
     """
     Check if a greenbone response is a successful response
