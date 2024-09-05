@@ -1,6 +1,6 @@
 namespace: hasnimehdi91
 name: greenbone_gvm
-version: 1.0.0
+version: 1.0.1
 readme: README.md
 authors:
 - Hasni Mehdi <hasnimehdi@outlook.com>
@@ -21,7 +21,7 @@ tags:
   - devsecops
 dependencies: {}
 repository: https://github.com/Black-Cockpit/greenbone_gvm
-documentation: https://github.com/Black-Cockpit/greenbone_gvm/blob/master/doc
+documentation: https://github.com/Black-Cockpit/greenbone_gvm/tree/master/docs
 homepage: https://github.com/Black-Cockpit/greenbone_gvm
 issues: https://github.com/Black-Cockpit/greenbone_gvm/issues
 build_ignore:
