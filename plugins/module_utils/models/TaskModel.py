@@ -14,13 +14,13 @@ class TaskModel(object):
         schedule_name (str)                             : Schedule name to by applied
         scan_once (bool)                                : Indicates where to run the scan only one time.
         add_result_in_assets (bool)                     : Indicates whether to add result part of the assets or not,
-                default is `true`
+                                                          default is `true`
         apply_overrides (bool)                          : Indicates whether to apply overrides or not
         min_quality_of_detection (int)                  : Minimum quality of detection, value from 1 to 100, default 70
         alterable (bool)                                : Indicates whether the task is alterable or not
         auto_delete (bool)                              : Indicates whether to delete the scan reports of not
         auto_delete_data (int)                          : Number of maximum reports to keep, default 1. Ignored if
-                auto_delete is set to false.
+                                                          auto_delete is set to false.
         scanner_name (str)                              : Scanner name to be used
         config_name (str)                               : Config name to be used on the scan
         hosts_ordering (str)                            : Host ordering, default is sequential

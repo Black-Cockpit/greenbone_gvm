@@ -5,6 +5,7 @@ import xmltodict
 from gvm.connections import UnixSocketConnection
 from gvm.protocols.gmp import Gmp
 
+from ..models.ExecutionResult import ExecutionResult
 from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
 from ..models.TaskModel import TaskModel
 from ..utils.GvmUtils import is_success_response
@@ -25,9 +26,10 @@ class TasksHandler(object):
         if tasks is None:
             tasks = []
         for task in tasks:
-            self.tasks.append(TaskModel.from_json(json.dumps(task)))
+            self.tasks.append(task)
 
-    def create_or_update_tasks(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel):
+    def create_or_update_tasks(self, socket: UnixSocketConnection,
+                               admin_credentials: GvmAdminCredentialsModel) -> ExecutionResult:
         """
         Create or update tasks
         :param admin_credentials: GVM admin credentials
@@ -41,6 +43,8 @@ class TasksHandler(object):
             get_schedules_response = gmp.get_schedules()
             if is_success_response(xmltodict.parse(get_schedules_response), "get_schedules_response") is False:
                 raise AssertionError(f"Failed to to get gvm schedules list")
+
+            execution_result = ExecutionResult()
 
             existing_schedules = xmltodict.parse(get_schedules_response).get("get_schedules_response", {}).get(
                 "schedule")
@@ -101,6 +105,9 @@ class TasksHandler(object):
                     dic = xmltodict.parse(create_task_response)
                     if is_success_response(dic, "create_task_response") is False:
                         raise AssertionError(f"Failed to create task {task.name}: \n {dic}")
+
+                    if execution_result.changed is False:
+                        execution_result.changed = True
                 else:
                     modify_task_response = gmp.modify_task(task_id=task_id,
                                                            preferences=task.build_preferences(scanner_type),
@@ -117,7 +124,47 @@ class TasksHandler(object):
                     if is_success_response(dic, "modify_task_response") is False:
                         raise AssertionError(f"Failed to update task {task.name}: \n {dic}")
 
-    def start(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel):
+                    if execution_result.changed is False:
+                        execution_result.changed = True
+            return execution_result
+
+    def delete_tasks(self, socket: UnixSocketConnection,
+                     admin_credentials: GvmAdminCredentialsModel) -> ExecutionResult:
+        """
+        Delete tasks
+        :param admin_credentials: GVM admin credentials
+        :param socket: GVM Unix domain socket
+        :return:
+        """
+        with Gmp(connection=socket) as gmp:
+            gmp.authenticate(admin_credentials.username, admin_credentials.password)
+
+            execution_result = ExecutionResult()
+
+            # List tasks
+            get_tasks_response = gmp.get_tasks(filter_string="first=0 rows=100")
+            if is_success_response(xmltodict.parse(get_tasks_response), "get_tasks_response") is False:
+                return execution_result
+
+            existing_tasks = xmltodict.parse(get_tasks_response
+                                             ).get("get_tasks_response", {}).get("task", {})
+
+            for task in self.tasks:
+                task_id = task.get_task_id(existing_tasks, task.name)
+
+                if task_id is not None:
+                    gmp.empty_trashcan()
+                    delete_task_response = gmp.delete_task(task_id=task_id, ultimate=True)
+
+                    dic = xmltodict.parse(delete_task_response)
+                    if is_success_response(dic, "delete_task_response") is False:
+                        raise AssertionError(f"Failed to delete task {task.name}: \n {dic}")
+
+                    if execution_result.changed is False:
+                        execution_result.changed = True
+            return execution_result
+
+    def start(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel) -> ExecutionResult:
         """
         Start tasks
         :param admin_credentials: GVM admin credentials
@@ -132,6 +179,8 @@ class TasksHandler(object):
             if is_success_response(xmltodict.parse(get_tasks_response), "get_tasks_response") is False:
                 raise AssertionError(f"Failed to to get gvm tasks list")
 
+            execution_result = ExecutionResult()
+
             existing_tasks = xmltodict.parse(get_tasks_response
                                              ).get("get_tasks_response", {}).get("task", {})
             for task in self.tasks:
@@ -142,7 +191,12 @@ class TasksHandler(object):
                     if is_success_response(dic, "start_task_response") is False:
                         raise AssertionError(f"Failed to start task {task.name}: \n {dic}")
 
-    def stop(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel):
+                    if execution_result.changed is False:
+                        execution_result.changed = True
+
+            return execution_result
+
+    def stop(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel) -> ExecutionResult:
         """
         Stop tasks
         :param admin_credentials: GVM admin credentials
@@ -157,6 +211,8 @@ class TasksHandler(object):
             if is_success_response(xmltodict.parse(get_tasks_response), "get_tasks_response") is False:
                 raise AssertionError(f"Failed to to get gvm tasks list")
 
+            execution_result = ExecutionResult()
+
             existing_tasks = xmltodict.parse(get_tasks_response
                                              ).get("get_tasks_response", {}).get("task")
             for task in self.tasks:
@@ -164,8 +220,12 @@ class TasksHandler(object):
                 if task.start is False and task_id is not None:
                     try:
                         gmp.stop_task(task_id)
+                        if execution_result.changed is False:
+                            execution_result.changed = True
                     except Exception as e:
                         print(f"Failed to stop task {task.name}, {e}")
+
+            return execution_result
 
     @classmethod
     def from_json(cls, json_string: str):

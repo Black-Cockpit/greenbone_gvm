@@ -11,11 +11,13 @@ from .CredentialsHandler import CredentialsHandler
 from .SchedulesHandler import SchedulesHandler
 from .TargetsHandler import TargetsHandler
 from .TasksHandler import TasksHandler
+from ..models.AuditModel import AuditModel
 from ..models.CredentialsModel import CredentialsModel
 from ..models.ExecutionResult import ExecutionResult
 from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
 from ..models.ScheduleModel import ScheduleModel
 from ..models.TargetModel import TargetModel
+from ..models.TaskModel import TaskModel
 
 
 class GvmManager(object):
@@ -95,15 +97,25 @@ class GvmManager(object):
         handler = SchedulesHandler(schedules=schedules)
         return handler.delete_schedules(self.socket, self.admin_credentials)
 
-    def create_or_update_tasks(self, tasks_config_path: str):
+    def create_or_update_tasks(self, tasks: List[TaskModel] = None) -> ExecutionResult:
         """
         Create or update scan tasks
 
-        :param tasks_config_path: Scan tasks config path
+        :param tasks: List of scan tasks (List[TaskModel])
         :return:
         """
-        handler = TasksHandler.from_json(self._read_config_to_json(tasks_config_path))
-        handler.create_or_update_tasks(self.socket, self.admin_credentials)
+        handler = TasksHandler(tasks)
+        return handler.create_or_update_tasks(self.socket, self.admin_credentials)
+
+    def delete_tasks(self, tasks: List[TaskModel] = None) -> ExecutionResult:
+        """
+        Delete scan tasks
+
+        :param tasks: List of scan tasks (List[TaskModel])
+        :return:
+        """
+        handler = TasksHandler(tasks)
+        return handler.delete_tasks(self.socket, self.admin_credentials)
 
     def create_or_update_audits(self, tasks_config_path: str):
         """
@@ -115,26 +127,28 @@ class GvmManager(object):
         handler = AuditsHandler.from_json(self._read_config_to_json(tasks_config_path))
         handler.create_or_update_audit_tasks(self.socket, self.admin_credentials)
 
-    def execute_task_command(self, tasks_config_path: str, task_type: str = "scan", command: bool = False):
+    def execute_task_command(self, tasks: List[TaskModel] = None, audits: List[AuditModel] = None,
+                             task_type: str = "scan", command: bool = False) -> ExecutionResult:
         """
         Start of stop scan tasks
 
+        :param tasks: List of scan tasks (List[AuditMode])
+        :param audits: List of audits (List[TaskModel])
         :param task_type: Type of the task, acceptable value are `scan` and `audit`
         :param command: Indicates whether to execute a start or a stop of the tasks
-        :param tasks_config_path: Scan tasks config path
         :return:
         """
         if (task_type in ['scan', 'audit']) is False:
             raise ValueError(f"Invalid {task_type}, task_type should either scan or audit")
 
         if task_type == "scan":
-            handler = TasksHandler.from_json(self._read_config_to_json(tasks_config_path))
+            handler = TasksHandler(tasks=tasks)
         else:
-            handler = AuditsHandler.from_json(self._read_config_to_json(tasks_config_path))
+            handler = AuditsHandler(audits=audits)
         if command is True:
-            handler.start(self.socket, self.admin_credentials)
+            return handler.start(self.socket, self.admin_credentials)
         else:
-            handler.stop(self.socket, self.admin_credentials)
+            return handler.stop(self.socket, self.admin_credentials)
 
     @staticmethod
     def _read_config_to_json(path: str) -> str:

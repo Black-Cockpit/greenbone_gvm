@@ -25,7 +25,7 @@ class AuditsHandler(object):
         if audits is None:
             audits = []
         for audit in audits:
-            self.audits.append(AuditModel.from_json(json.dumps(audit)))
+            self.audits.append(audit)
 
     def create_or_update_audit_tasks(self, socket: UnixSocketConnection, admin_credentials: GvmAdminCredentialsModel):
         """

@@ -280,7 +280,7 @@ def run_module():
         gvm_module.fail_json(**result)
     except Exception as e:
         result['failed'] = True
-        result['msg'] = str(f'Failed to manage GVM credentials {str(e)}')
+        result['msg'] = str(f'Failed to manage GVM target {str(e)}')
         gvm_module.fail_json(**result)
 
     # Exit with result
