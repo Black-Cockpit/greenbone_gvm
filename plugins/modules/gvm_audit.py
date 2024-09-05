@@ -7,10 +7,10 @@ import traceback
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from gvm.connections import UnixSocketConnection
 
-from ..module_utils.models.AuditModel import AuditModel
-from ..module_utils.exceptions.ResourceInUseError import ResourceInUseError
-from ..module_utils.models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
-from ..module_utils.libs.GvmManager import GvmManager
+from ..module_utils.models.audit_model import AuditModel
+from ..module_utils.exceptions.resource_in_use_error import ResourceInUseError
+from ..module_utils.models.gvm_admin_credentials_model import GvmAdminCredentialsModel
+from ..module_utils.libs.gvm_manager import GvmManager
 
 __metaclass__ = type
 LIB_IMP_ERR = None

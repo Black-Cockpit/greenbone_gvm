@@ -9,11 +9,11 @@ from gvm.connections import UnixSocketConnection
 from gvm.protocols.gmp import Gmp
 from gvm.protocols.gmp.requests.v225 import CredentialType
 
-from ..exceptions.ResourceInUseError import ResourceInUseError
-from ..models.ExecutionResult import ExecutionResult
-from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
-from ..models.TargetModel import TargetModel
-from ..utils.GvmUtils import is_success_response
+from ..exceptions.resource_in_use_error import ResourceInUseError
+from ..models.execution_result import ExecutionResult
+from ..models.gvm_admin_credentials_model import GvmAdminCredentialsModel
+from ..models.target_model import TargetModel
+from ..utils.gvm_utils import is_success_response
 
 
 class TargetsHandler(object):

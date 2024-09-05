@@ -9,8 +9,8 @@ import pytz
 from icalendar import Calendar, Event
 from dateutil import parser
 
-from .ScheduleRecurrenceModel import ScheduleRecurrenceModel
-from ..utils.DataValidator import is_parsable_to_date, is_valid_time_zone
+from .schedule_recurrence_model import ScheduleRecurrenceModel
+from ..utils.data_validator import is_parsable_to_date, is_valid_time_zone
 
 
 class ScheduleModel(object):

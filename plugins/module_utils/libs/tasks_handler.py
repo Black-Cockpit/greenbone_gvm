@@ -8,10 +8,10 @@ import xmltodict
 from gvm.connections import UnixSocketConnection
 from gvm.protocols.gmp import Gmp
 
-from ..models.ExecutionResult import ExecutionResult
-from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
-from ..models.TaskModel import TaskModel
-from ..utils.GvmUtils import is_success_response
+from ..models.execution_result import ExecutionResult
+from ..models.gvm_admin_credentials_model import GvmAdminCredentialsModel
+from ..models.task_model import TaskModel
+from ..utils.gvm_utils import is_success_response
 
 
 class TasksHandler(object):

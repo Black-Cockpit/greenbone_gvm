@@ -9,11 +9,11 @@ import xmltodict
 from gvm.connections import UnixSocketConnection
 from gvm.protocols.gmp import Gmp
 
-from ..exceptions.ResourceInUseError import ResourceInUseError
-from ..models.ExecutionResult import ExecutionResult
-from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
-from ..models.ScheduleModel import ScheduleModel
-from ..utils.GvmUtils import is_success_response
+from ..exceptions.resource_in_use_error import ResourceInUseError
+from ..models.execution_result import ExecutionResult
+from ..models.gvm_admin_credentials_model import GvmAdminCredentialsModel
+from ..models.schedule_model import ScheduleModel
+from ..utils.gvm_utils import is_success_response
 
 
 class SchedulesHandler(object):

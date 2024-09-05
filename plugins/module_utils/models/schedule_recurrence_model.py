@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 from typing import List
 
-from .CalendarEventRuleModel import CalendarEventRuleModel
+from .calendar_event_rule_model import CalendarEventRuleModel
 
 
 class ScheduleRecurrenceModel(object):

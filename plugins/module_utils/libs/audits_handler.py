@@ -8,10 +8,10 @@ import xmltodict
 from gvm.connections import UnixSocketConnection
 from gvm.protocols.gmp import Gmp
 
-from ..models.AuditModel import AuditModel
-from ..models.ExecutionResult import ExecutionResult
-from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
-from ..utils.GvmUtils import is_success_response
+from ..models.audit_model import AuditModel
+from ..models.execution_result import ExecutionResult
+from ..models.gvm_admin_credentials_model import GvmAdminCredentialsModel
+from ..utils.gvm_utils import is_success_response
 
 
 class AuditsHandler(object):

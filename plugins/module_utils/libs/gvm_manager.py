@@ -9,18 +9,18 @@ import json
 
 from gvm.connections import UnixSocketConnection
 
-from .AuditsHandler import AuditsHandler
-from .CredentialsHandler import CredentialsHandler
-from .SchedulesHandler import SchedulesHandler
-from .TargetsHandler import TargetsHandler
-from .TasksHandler import TasksHandler
-from ..models.AuditModel import AuditModel
-from ..models.CredentialsModel import CredentialsModel
-from ..models.ExecutionResult import ExecutionResult
-from ..models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
-from ..models.ScheduleModel import ScheduleModel
-from ..models.TargetModel import TargetModel
-from ..models.TaskModel import TaskModel
+from .audits_handler import AuditsHandler
+from .credentials_handler import CredentialsHandler
+from .schedules_handler import SchedulesHandler
+from .targets_handler import TargetsHandler
+from .tasks_handler import TasksHandler
+from ..models.audit_model import AuditModel
+from ..models.credentials_model import CredentialsModel
+from ..models.execution_result import ExecutionResult
+from ..models.gvm_admin_credentials_model import GvmAdminCredentialsModel
+from ..models.schedule_model import ScheduleModel
+from ..models.target_model import TargetModel
+from ..models.task_model import TaskModel
 
 
 class GvmManager(object):

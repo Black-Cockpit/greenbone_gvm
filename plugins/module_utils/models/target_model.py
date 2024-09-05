@@ -5,7 +5,7 @@ import json
 from typing import List, Optional
 from gvm.protocols.gmp.requests.v225 import AliveTest
 
-from ..utils.DataValidator import is_valid_domain_or_ip_or_network, is_global_ip_or_global_cidr, is_valid_port
+from ..utils.data_validator import is_valid_domain_or_ip_or_network, is_global_ip_or_global_cidr, is_valid_port
 
 
 def _get_alive_test(alive_test: str) -> AliveTest:

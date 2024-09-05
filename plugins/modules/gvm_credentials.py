@@ -6,10 +6,10 @@ import traceback
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from gvm.connections import UnixSocketConnection
 
-from ..module_utils.exceptions.ResourceInUseError import ResourceInUseError
-from ..module_utils.models.GvmAdminCredentialsModel import GvmAdminCredentialsModel
-from ..module_utils.models.CredentialsModel import CredentialsModel
-from ..module_utils.libs.GvmManager import GvmManager
+from ..module_utils.exceptions.resource_in_use_error import ResourceInUseError
+from ..module_utils.models.gvm_admin_credentials_model import GvmAdminCredentialsModel
+from ..module_utils.models.credentials_model import CredentialsModel
+from ..module_utils.libs.gvm_manager import GvmManager
 
 __metaclass__ = type
 LIB_IMP_ERR = None
@@ -38,23 +38,20 @@ author:
 
 options:
     socket_path:
-        description: 
-            - GVM socket path, default: /run/gvmd/gvmd.sock
-        required: false
+        description:
+            - Path to the GVM socket file.
+        required: true
         type: str
-        default: /run/gvmd/gvmd.sock
     gvm_username:
-        description: 
-            - GVM admin username: default: admin.
-        required: false
+        description:
+            - Username for GVM authentication.
+        required: true
         type: str
-        default: admin
     gvm_password:
-        description: 
-            - GVM admin password: default: admin.
-        required: false
+        description:
+            - Password for GVM authentication.
+        required: true
         type: str
-        default: admin
     name:
         description:
             - Name of the new credential
@@ -88,8 +85,8 @@ options:
         required: false
         type: str
     private_key_pem:
-        description:
-            - Private key to use for login. Required for usk credentials type. Also used for the cc credentials type. 
+        description: |
+            Private key to use for login. Required for usk credentials type. Also used for the cc credentials type. 
             The supported key types (dsa, rsa, ecdsa, ...) and formats (PEM, PKC#12, OpenSSL, ...) depend on your installed GnuTLS version.
         required: false
         type: str
